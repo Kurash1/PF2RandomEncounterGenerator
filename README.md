@@ -8,7 +8,7 @@ The program will generate an encounter for that party level at or below the desi
 
 # BUILD
 
-Standard building process for C# applications, but you will need to manually export the Creature list you'd like to use from Archives of Nethys.
+Standard building process for C# applications, but you will need to manually export the Creature list you'd like to use from Archives of Nethys. It should be in CSV format, named table-data.csv, and should reside next to the executable.
 
 the following fields are used by the generator
 
