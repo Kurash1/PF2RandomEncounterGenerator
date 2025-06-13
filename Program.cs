@@ -1,16 +1,32 @@
 ﻿using Csv;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Numerics;
+using System;
 // You need to include an exported table from AoN with the following fields
 // - level
 // - creature_family
-// - rarity
-// - url
 // https://2e.aonprd.com/Monsters.aspx?Letter=&exclude-rarities=unique&legacy=no&sort=name-asc&display=table&columns=level+creature_family+rarity+url
+//	"Any",
+//	"Swamp",
+//	"Plains",
+//	"Mountains",
+//	"Underground",
+//	"Urban",
+//	"Forest",
+//	"Aquatic",
+//	"Jungle",
+//	"Extraplanar",
+//	"Hills",
+//	"Desert",
+//	"Tundra"
+
 var csv = File.ReadAllText("table-data.csv");
 var creatures = CsvReader.ReadFromText(csv);
 Random rnd = new();
 
-int PartyLevel = GetNullableIntArgument(0, 1);
-int EncounterXP = GetNullableIntArgument(1, 80);
+int PartyLevel = GetNullableIntArgument(0, "Level:", 1);
+int EncounterXP = GetNullableIntArgument(1, "XP:", 80);
+string Terrain = GetNullableStringArgument(2, "Terrain:", "Any");
 
 ConsoleKeyInfo? input = null;
 do
@@ -68,19 +84,28 @@ int LevelToXP(int level) => level switch
 	4 => 160,
 	_ => throw new NotImplementedException($"Creature level outside party level range")
 };
-ICsvLine GetRandomCreature(int level)
+ICsvLine? GetRandomCreature(int level)
 {
-	var selectedList = from creature in creatures where creature["level"].Trim() == level.ToString() select creature;
+	var selectedList = from creature in creatures where creature["level"].Trim() == level.ToString() && (creature["terrain"] == Terrain || creature["terrain"] == "Any" || Terrain == "Any") select creature;
 	return selectedList.RandomElement();
 }
 void PrintCreature(ICsvLine line)
 {
 	Console.WriteLine($@"# {line["name"]} - {line["level"]}
-	; {line["creature_family"]} - {line["rarity"]}
-	https://2e.aonprd.com{line["url"]}");
+	; {line["creature_family"]}");
 }
-int GetNullableIntArgument(int index, int defaultValue)
+string GetNullableStringArgument(int index, string id, string defaultValue)
 {
+	if (args.Contains(id) && args.Length > Array.IndexOf(args, id))
+		return args[Array.IndexOf(args, id) + 1];
+	if (args.Length > index)
+		return args[index];
+	return defaultValue;
+}
+int GetNullableIntArgument(int index, string id, int defaultValue)
+{
+	if (args.Contains(id) && args.Length > Array.IndexOf(args, id) && int.TryParse(args[Array.IndexOf(args, id) + 1], out int idvalue))
+		return idvalue;
 	if (args.Length > index && int.TryParse(args[index], out int value))
 		return value;
 	return defaultValue;
